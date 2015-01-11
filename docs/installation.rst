@@ -6,9 +6,8 @@ Get ``Swingtime``
 
 Options:
 
-* Source: https://github.com/dakrauth/django-swingtime
-* ``pip install django-swingtime``
-* ``curl -o swingtime.zip -L https://github.com/dakrauth/django-swingtime/archive/master.zip``
+* Source: https://github.com/jonge-democraten/mezzanine-swingtime
+* ``curl -o swingtime.zip -L https://github.com/jonge-democraten/mezzanine-swingtime/archive/master.zip``
 
 
 Demo
@@ -34,14 +33,14 @@ Running the demo
 
 Get the code::
 
-    $ git clone https://github.com/dakrauth/django-swingtime.git django-swingtime-master
+    $ git clone https://github.com/jonge-democraten/mezzanine-swingtime.git mezzanine-swingtime-master
 
 
 *-- or --*
 
 ::
 
-    $ curl -o swingtime.zip -L https://github.com/dakrauth/django-swingtime/archive/master.zip
+    $ curl -o swingtime.zip -L https://github.com/jonge-democraten/mezzanine-swingtime/archive/master.zip
     $ unzip swingtime.zip
 
 
@@ -49,7 +48,7 @@ You can set up your environment to run the demo in a ``virtualenv`` by doing the
 following (please note that for the following commands you have already installed
 ``virtualenv`` and ``virtualenvwrapper``)::
 
-    $ cd django-swingtime-master/demo
+    $ cd mezzanine-swingtime-master/demo
     $ mkvirtualenv swingtime_demo
     $ pip install -r requirements.txt
     $ pip install pytz django-extensions Sphinx # <-- optional
