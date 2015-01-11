@@ -15,7 +15,7 @@ except ImportError:
 from mezzanine.core.models import Displayable, RichText, SiteRelated
 
 __all__ = (
-    'EventType',
+    'EventCategory',
     'Event',
     'Occurrence',
     'create_event'
@@ -206,7 +206,7 @@ def create_event(
     from swingtime.conf import settings as swingtime_settings
 
     if isinstance(event_category, str):
-        event_category, created = EventType.objects.get_or_create(
+        event_category, created = EventCategory.objects.get_or_create(
             name=event_category
         )
 

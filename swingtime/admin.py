@@ -1,13 +1,8 @@
-try:
-    from django.contrib.contenttypes.admin import GenericTabularInline
-except ImportError:
-    from django.contrib.contenttypes.generic import GenericTabularInline
-
 from django.contrib import admin
 from swingtime.models import *
 
-class EventTypeAdmin(admin.ModelAdmin):
-    list_display = ('label', 'abbr')
+class EventCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name')
 
 
 class OccurrenceInline(admin.TabularInline):
@@ -16,9 +11,10 @@ class OccurrenceInline(admin.TabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'event_type', 'description')
-    list_filter = ('event_type', )
-    search_fields = ('title', 'description')
+    list_display = ('title', 'event_category')
+    list_filter = ('event_category',)
+    search_fields = ('title', 'description', 'content', 'keywords')
+    exclude = ('slug', '_meta_title', 'gen_description', 'description')
 
     inlines = [OccurrenceInline]
 
