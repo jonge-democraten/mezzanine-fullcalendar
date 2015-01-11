@@ -6,3 +6,4 @@ demo/django
 docs/build
 MANIFEST
 dist
+*.swp
