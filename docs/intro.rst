@@ -1,3 +1,10 @@
+Mezzanine fork of django-swingtime
+==================================
+
+This is a fork of django-swingtime, which modifies the models to use the
+mezzanine core models. This integrates it more nicely with the rest of
+a mezzanine based website.
+
 About Swingtime
 ===============
 
