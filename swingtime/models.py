@@ -27,29 +27,28 @@ class EventCategory(SiteRelated):
     Simple ``Event`` classifcation.
 
     '''
-    abbr = models.CharField(_('abbreviation'), max_length=4, unique=True)
-    label = models.CharField(_('label'), max_length=50)
+    name = models.CharField(_('name'), max_length=4, unique=True)
+    description = models.CharField(_('description'), max_length=50)
 
     class Meta:
         verbose_name = _('event type')
         verbose_name_plural = _('event types')
 
     def __str__(self):
-        return self.label
-
+        return self.name
 
 @python_2_unicode_compatible
 class Event(Displayable, RichText):
     '''
     Container model for general metadata and associated ``Occurrence`` entries.
     '''
-    event_type = models.ForeignKey(EventType, verbose_name=_('event type'))
+    event_category = models.ForeignKey(EventCategory, verbose_name=_('event type'),
         blank=True, null=True)
 
     class Meta:
         verbose_name = _('event')
         verbose_name_plural = _('events')
-        ordering = ('title', )
+        ordering = ('title',)
 
     @models.permalink
     def get_absolute_url(self):
@@ -174,7 +173,7 @@ class Occurrence(models.Model):
 
 def create_event(
     title,
-    event_type,
+    event_category,
     description='',
     start_time=None,
     end_time=None,
@@ -182,16 +181,16 @@ def create_event(
 ):
     '''
     Convenience function to create an ``Event``, optionally create an
-    ``EventType``, and associated ``Occurrence``s. ``Occurrence`` creation
+    ``EventCategory``, and associated ``Occurrence``s. ``Occurrence`` creation
     rules match those for ``Event.add_occurrences``.
 
     Returns the newly created ``Event`` instance.
 
     Parameters
 
-    ``event_type``
-        can be either an ``EventType`` object or 2-tuple of ``(abbreviation,label)``,
-        from which an ``EventType`` is either created or retrieved.
+    ``event_category``
+        can be either an ``EventCategory`` object or string,
+        from which an ``EventCategory`` is either created or retrieved.
 
     ``start_time``
         will default to the current hour if ``None``
@@ -206,20 +205,16 @@ def create_event(
     '''
     from swingtime.conf import settings as swingtime_settings
 
-    if isinstance(event_type, tuple):
-        event_type, created = EventType.objects.get_or_create(
-            abbr=event_type[0],
-            label=event_type[1]
+    if isinstance(event_category, str):
+        event_category, created = EventType.objects.get_or_create(
+            name=event_category
         )
 
     event = Event.objects.create(
         title=title,
         content=description,
-        event_type=event_type
+        event_category=event_category
     )
-
-    if note is not None:
-        event.notes.create(note=note)
 
     start_time = start_time or datetime.now().replace(
         minute=0,
