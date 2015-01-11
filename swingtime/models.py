@@ -3,14 +3,7 @@ from dateutil import rrule
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
-
-try:
-    from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-except ImportError:
-    from django.contrib.contenttypes.generic import GenericForeignKey, \
-        GenericRelation
 
 from mezzanine.core.models import Displayable, RichText, SiteRelated
 
@@ -31,8 +24,8 @@ class EventCategory(SiteRelated):
     description = models.CharField(_('description'), max_length=50)
 
     class Meta:
-        verbose_name = _('event type')
-        verbose_name_plural = _('event types')
+        verbose_name = _('event category')
+        verbose_name_plural = _('event categories')
 
     def __str__(self):
         return self.name
@@ -42,8 +35,8 @@ class Event(Displayable, RichText):
     '''
     Container model for general metadata and associated ``Occurrence`` entries.
     '''
-    event_category = models.ForeignKey(EventCategory, verbose_name=_('event type'),
-        blank=True, null=True)
+    event_category = models.ForeignKey(EventCategory,
+        verbose_name=_('event category'), blank=True, null=True)
 
     class Meta:
         verbose_name = _('event')

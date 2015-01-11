@@ -2,7 +2,7 @@ from django.contrib import admin
 from swingtime.models import *
 
 class EventCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name')
+    list_display = ('name',)
 
 
 class OccurrenceInline(admin.TabularInline):

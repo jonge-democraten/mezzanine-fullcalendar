@@ -379,8 +379,6 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        if FIELDS_REQUIRED:
-            fields = "__all__"
 
     def __init__(self, *args, **kws):
         super(EventForm, self).__init__(*args, **kws)
