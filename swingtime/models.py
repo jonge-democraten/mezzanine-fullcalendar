@@ -12,6 +12,8 @@ except ImportError:
     from django.contrib.contenttypes.generic import GenericForeignKey, \
         GenericRelation
 
+from mezzanine.core.models import Displayable, RichText
+
 __all__ = (
     'Note',
     'EventType',
@@ -41,6 +43,7 @@ class Note(models.Model):
     def __str__(self):
         return self.note
 
+
 @python_2_unicode_compatible
 class EventType(models.Model):
     '''
@@ -59,12 +62,10 @@ class EventType(models.Model):
 
 
 @python_2_unicode_compatible
-class Event(models.Model):
+class Event(Displayable, RichText):
     '''
     Container model for general metadata and associated ``Occurrence`` entries.
     '''
-    title = models.CharField(_('title'), max_length=32)
-    description = models.CharField(_('description'), max_length=100)
     event_type = models.ForeignKey(EventType, verbose_name=_('event type'))
     notes = GenericRelation(Note, verbose_name=_('notes'))
 
@@ -72,9 +73,6 @@ class Event(models.Model):
         verbose_name = _('event')
         verbose_name_plural = _('events')
         ordering = ('title', )
-
-    def __str__(self):
-        return self.title
 
     @models.permalink
     def get_absolute_url(self):
@@ -241,7 +239,7 @@ def create_event(
 
     event = Event.objects.create(
         title=title,
-        description=description,
+        content=description,
         event_type=event_type
     )
 
