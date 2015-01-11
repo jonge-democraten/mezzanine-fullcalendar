@@ -19,11 +19,11 @@ VERSION = __import__('swingtime').get_version()
 setup(
     name='django-swingtime',
     version=VERSION,
-    url='https://github.com/dakrauth/django-swingtime',
-    author_email='dakrauth@gmail.com',
-    description='A Django calendaring application.',
+    url='https://github.com/jonge-democraten/mezzanine-swingtime',
+    author_email='ict-team@jd.nl',
+    description='A Mezzanine calendaring application.',
     long_description=long_description,
-    author='David A Krauth',
+    author='David A Krauth, Jonge Democraten',
     platforms=['any'],
     license='MIT License',
     classifiers=(
@@ -35,5 +35,5 @@ setup(
         'Programming Language :: Python :: 3.4',
     ),
     packages=['swingtime', 'swingtime.conf'],
-    install_requires=['python-dateutil', 'django>=1.5']
+    install_requires=['python-dateutil', 'django>=1.5', 'mezzanine']
 )

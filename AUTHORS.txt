@@ -1,2 +1,3 @@
+sh4wn - Lucas van Dijk <info@return1.net>
 dakrauth - David A Krauth <dakrauth@gmail.com>
 James O'Donnell - setup script
