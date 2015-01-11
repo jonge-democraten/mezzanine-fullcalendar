@@ -12,10 +12,9 @@ except ImportError:
     from django.contrib.contenttypes.generic import GenericForeignKey, \
         GenericRelation
 
-from mezzanine.core.models import Displayable, RichText
+from mezzanine.core.models import Displayable, RichText, SiteRelated
 
 __all__ = (
-    'Note',
     'EventType',
     'Event',
     'Occurrence',
@@ -23,29 +22,7 @@ __all__ = (
 )
 
 @python_2_unicode_compatible
-class Note(models.Model):
-    '''
-    A generic model for adding simple, arbitrary notes to other models such as
-    ``Event`` or ``Occurrence``.
-
-    '''
-    note = models.TextField(_('note'))
-    created = models.DateTimeField(_('created'), auto_now_add=True)
-
-    content_type = models.ForeignKey(ContentType, verbose_name=_('content type'))
-    object_id = models.PositiveIntegerField(_('object id'))
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    class Meta:
-        verbose_name = _('note')
-        verbose_name_plural = _('notes')
-
-    def __str__(self):
-        return self.note
-
-
-@python_2_unicode_compatible
-class EventType(models.Model):
+class EventCategory(SiteRelated):
     '''
     Simple ``Event`` classifcation.
 
@@ -67,7 +44,7 @@ class Event(Displayable, RichText):
     Container model for general metadata and associated ``Occurrence`` entries.
     '''
     event_type = models.ForeignKey(EventType, verbose_name=_('event type'))
-    notes = GenericRelation(Note, verbose_name=_('notes'))
+        blank=True, null=True)
 
     class Meta:
         verbose_name = _('event')
@@ -169,7 +146,6 @@ class Occurrence(models.Model):
     start_time = models.DateTimeField(_('start time'))
     end_time = models.DateTimeField(_('end time'))
     event = models.ForeignKey(Event, verbose_name=_('event'), editable=False)
-    notes = GenericRelation(Note, verbose_name=_('notes'))
 
     objects = OccurrenceManager()
 
@@ -202,7 +178,6 @@ def create_event(
     description='',
     start_time=None,
     end_time=None,
-    note=None,
     **rrule_params
 ):
     '''
