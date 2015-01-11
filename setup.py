@@ -17,7 +17,7 @@ with open('README.rst', 'r') as f:
 VERSION = __import__('swingtime').get_version()
 
 setup(
-    name='django-swingtime',
+    name='mezzanine-swingtime',
     version=VERSION,
     url='https://github.com/jonge-democraten/mezzanine-swingtime',
     author_email='ict-team@jd.nl',
@@ -35,5 +35,5 @@ setup(
         'Programming Language :: Python :: 3.4',
     ),
     packages=['swingtime', 'swingtime.conf'],
-    install_requires=['python-dateutil', 'django>=1.5', 'mezzanine']
+    install_requires=['python-dateutil', 'django>=1.5', 'mezzanine>=3.1']
 )
