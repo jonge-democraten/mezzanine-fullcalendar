@@ -4,8 +4,8 @@ from swingtime import views
 urlpatterns = patterns('',
     url(
         r'^(?:calendar/)?$',
-        views.today_view,
-        name='swingtime-today'
+        views.CalendarView.as_view(),
+        name='swingtime-calendar'
     ),
 
     url(

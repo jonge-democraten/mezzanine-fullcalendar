@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
 from django.views.generic.list import MultipleObjectTemplateResponseMixin, ListView
 from django.views.generic.dates import BaseDateListView
+from mezzanine.utils.sites import current_site_id
 
 from swingtime.models import Event, Occurrence
 from swingtime import utils, forms
@@ -42,17 +43,6 @@ class JSONResponseMixin:
     def get_data(self, context):
         return context
 
-
-class AgendaView(ListView):
-    model = Occurrence
-
-    def get_queryset(self):
-        return Occurrence.objects.upcoming()
-
-
-class SiteRelatedAgendaView(AgendaView):
-    def get_queryset(self):
-        return Occurrence.site_related.upcoming()
 
 class DateRangeMixin:
     """
@@ -205,8 +195,6 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
         date_field = self.get_date_field()
         date_field2 = self.get_date_field2()
 
-        print(date_field, date_field2)
-
         # Select all objects which at least have some overlapping with the
         # given range. This means the end date of an object should be greater
         # than the given start date, and the start date of an object should be
@@ -215,8 +203,6 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
             '%s__gte' % date_field2: date_start,
             '%s__lte' % date_field: date_end
         }
-
-        print(date_filter)
 
         qs = self.get_dated_queryset(date_field, **date_filter)
         date_list = self.get_date_list(qs)
@@ -234,7 +220,11 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
     date_field2 = "end_time"
 
     def get_queryset(self):
-        return self.model.objects.select_related('event')
+        print(current_site_id())
+        if current_site_id() == settings.SITE_ID:
+            return self.model.objects.select_related('event')
+        else:
+            return self.model.site_related.select_related('event')
 
     def render_to_response(self, context, **kwargs):
         context = self.get_context_data()
@@ -260,6 +250,26 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
             })
 
         return events
+
+
+class CalendarView(BaseCalendarView):
+    template_suffix = "calendar_all"
+
+    def get_queryset(self):
+        if current_site_id() == settings.SITE_ID:
+            return self.model.objects.select_related('event')
+        else:
+            return self.model.site_related.select_related('event')
+
+
+class AgendaView(ListView):
+    model = Occurrence
+
+    def get_queryset(self):
+        if current_site_id() == settings.SITE_ID:
+            return Occurrence.objects.upcoming()
+        else:
+            return Occurrence.site_related.upcoming()
 
 
 def event_listing(

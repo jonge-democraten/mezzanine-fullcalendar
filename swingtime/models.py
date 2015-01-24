@@ -154,7 +154,8 @@ class OccurrenceManager(models.Manager):
 class SiteRelatedOccurrenceManager(OccurrenceManager):
     def get_queryset(self):
         qs = super(SiteRelatedOccurrenceManager, self).get_queryset()
-        qs.select_related('event').filter(event__site__id__exact=current_site_id())
+        qs = qs.select_related('event').filter(
+            event__site__id__exact=current_site_id())
 
         return qs
 
