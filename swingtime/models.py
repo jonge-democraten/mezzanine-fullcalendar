@@ -22,8 +22,8 @@ class EventCategory(SiteRelated):
     Simple ``Event`` classifcation.
 
     '''
-    name = models.CharField(_('name'), max_length=4, unique=True)
-    description = models.CharField(_('description'), max_length=50)
+    name = models.CharField(_('name'), max_length=50, unique=True)
+    description = models.CharField(_('description'), max_length=255)
 
     class Meta:
         verbose_name = _('event category')
