@@ -149,6 +149,10 @@ class OccurrenceManager(models.Manager):
         return qs.filter(event=event) if event else qs
 
 
+class SiteRelatedOccurrenceManager(OccurrenceManager, SiteRelatedManager):
+    pass
+
+
 @python_2_unicode_compatible
 class Occurrence(models.Model):
     '''
@@ -160,6 +164,7 @@ class Occurrence(models.Model):
     event = models.ForeignKey(Event, verbose_name=_('event'), editable=False)
 
     objects = OccurrenceManager()
+    site_related = SiteRelatedOccurrenceManager()
 
     class Meta:
         verbose_name = _('occurrence')
