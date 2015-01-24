@@ -3,9 +3,11 @@ from dateutil import rrule
 
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils import timezone
 from django.db import models
 
 from mezzanine.core.models import Displayable, RichText, SiteRelated
+from mezzanine.core.managers import SiteRelatedManager
 
 __all__ = (
     'EventCategory',
