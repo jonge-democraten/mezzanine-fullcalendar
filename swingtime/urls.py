@@ -16,42 +16,30 @@ urlpatterns = patterns('',
 
     url(
         r'^calendar/(?P<year>\d{4})/$',
-        views.year_view,
+        views.CalendarView.as_view(),
         name='swingtime-yearly-view'
     ),
 
     url(
         r'^calendar/(\d{4})/(0?[1-9]|1[012])/$',
-        views.month_view,
+        views.CalendarView.as_view(),
         name='swingtime-monthly-view'
     ),
 
     url(
-        r'^calendar/(\d{4})/(0?[1-9]|1[012])/([0-3]?\d)/$',
-        views.day_view,
-        name='swingtime-daily-view'
-    ),
-
-    url(
-        r'^events/$',
-        views.event_listing,
+        r'^agenda/$',
+        views.AgendaView.as_view(),
         name='swingtime-events'
     ),
 
     url(
-        r'^events/add/$',
-        views.add_event,
-        name='swingtime-add-event'
-    ),
-
-    url(
-        r'^events/(\d+)/$',
+        r'^event/(\d+)/$',
         views.event_view,
         name='swingtime-event'
     ),
 
     url(
-        r'^events/(\d+)/(\d+)/$',
+        r'^event/(\d+)/occurrence/(\d+)/$',
         views.occurrence_view,
         name='swingtime-occurrence'
     ),
