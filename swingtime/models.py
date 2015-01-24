@@ -5,9 +5,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from django.db import models
+from mezzanine.utils.sites import current_site_id
 
 from mezzanine.core.models import Displayable, RichText, SiteRelated
-from mezzanine.core.managers import SiteRelatedManager
 
 __all__ = (
     'EventCategory',
@@ -151,8 +151,12 @@ class OccurrenceManager(models.Manager):
         return qs.filter(event=event) if event else qs
 
 
-class SiteRelatedOccurrenceManager(OccurrenceManager, SiteRelatedManager):
-    pass
+class SiteRelatedOccurrenceManager(OccurrenceManager):
+    def get_queryset(self):
+        qs = super(SiteRelatedOccurrenceManager, self).get_queryset()
+        qs.select_related('event').filter(event__site__id__exact=current_site_id())
+
+        return qs
 
 
 @python_2_unicode_compatible
@@ -161,6 +165,7 @@ class Occurrence(models.Model):
     Represents the start end time for a specific occurrence of a master ``Event``
     object.
     '''
+    description = models.CharField(max_length=100, blank=True, null=True)
     start_time = models.DateTimeField(_('start time'))
     end_time = models.DateTimeField(_('end time'))
     event = models.ForeignKey(Event, verbose_name=_('event'), editable=False)
