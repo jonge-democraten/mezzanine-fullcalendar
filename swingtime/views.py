@@ -11,8 +11,9 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
+from django.views.generic import TemplateView
 from django.views.generic.list import MultipleObjectTemplateResponseMixin, ListView
-from django.views.generic.dates import BaseDateListView
+from django.views.generic.dates import BaseDateListView, YearMixin, MonthMixin
 from mezzanine.utils.sites import current_site_id
 
 from swingtime.models import Event, Occurrence
@@ -252,18 +253,39 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
         return events
 
 
-class CalendarView(BaseCalendarView):
-    template_suffix = "calendar_all"
+class CalendarView(YearMixin, MonthMixin, TemplateView):
+    template_name = "swingtime/calendar.html"
 
-    def get_queryset(self):
-        if current_site_id() == settings.SITE_ID:
-            return self.model.objects.select_related('event')
-        else:
-            return self.model.site_related.select_related('event')
+    def get_month(self):
+        try:
+            month = super(CalendarView, self).get_month()
+        except Http404:
+            month = datetime.now().month
+
+        return month
+
+    def get_year(self):
+        try:
+            year = super(CalendarView, self).get_year()
+        except Http404:
+            year - datetime.now().year
+
+        return year
+
+    def get_context_data(self, **kwargs):
+        context = super(CalendarView, self).get_context_data(**kwargs)
+
+        context.update({
+            'month': self.get_month(),
+            'year': self.get_year()
+        })
+
+        return context
 
 
 class AgendaView(ListView):
     model = Occurrence
+    paginate_by = 20
 
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
