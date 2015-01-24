@@ -9,6 +9,7 @@ import itertools
 from django.db.models.query import QuerySet
 from django.utils.safestring import mark_safe
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils import timezone
 
 from swingtime.conf import settings as swingtime_settings
 from swingtime.models import EventCategory
@@ -54,7 +55,7 @@ def css_class_cycler():
     '''
     FMT = 'evt-{0}-{1}'.format
     return defaultdict(default_css_class_cycler, (
-        (e.abbr, itertools.cycle((FMT(e.abbr, 'even'), FMT(e.abbr, 'odd'))))
+        (e.name, itertools.cycle((FMT(e.name, 'even'), FMT(e.name, 'odd'))))
         for e in EventCategory.objects.all()
     ))
 
@@ -133,7 +134,7 @@ def create_timeslot_table(
 
     '''
     from swingtime.models import Occurrence
-    dt = dt or datetime.now()
+    dt = dt or timezone.now()
     dtstart = datetime.combine(dt.date(), start_time)
     dtend = dtstart + end_time_delta
 
@@ -211,7 +212,7 @@ def create_timeslot_table(
             cols[colkey] = proxy
             if not proxy.event_class and column_classes:
                 proxy.event_class = next(
-                    column_classes[colkey][proxy.event_type.abbr]
+                    column_classes[colkey][proxy.event_category.name]
                 )
 
         table.append((rowkey, cols))
