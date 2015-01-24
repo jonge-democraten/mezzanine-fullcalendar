@@ -3,8 +3,15 @@ import itertools
 from datetime import datetime, timedelta
 
 from django import http
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+from django.http import JsonResponse, Http404
+from django.utils.functional import cached_property
 from django.shortcuts import get_object_or_404, render
+from django.views.generic.dates import YearMixin, MonthMixin, WeekMixin, DayMixin, \
+    BaseDateListView
+from django.contrib.sites.shortcuts import get_current_site
 
 from swingtime.models import Event, Occurrence
 from swingtime import utils, forms
@@ -14,6 +21,201 @@ from dateutil import parser
 
 if swingtime_settings.CALENDAR_FIRST_WEEKDAY is not None:
     calendar.setfirstweekday(swingtime_settings.CALENDAR_FIRST_WEEKDAY)
+
+class JSONResponseMixin:
+    """
+        A mixin class to render a view as JSON
+    """
+
+    def render_to_json_response(self, context, **response_kwargs):
+        """
+            Returns a JSON response based on the context
+        """
+
+        return JsonResponse(
+            self.get_data(context),
+            **response_kwargs
+        )
+
+    def get_data(self, context):
+        return context
+
+
+class AgendaView(ListView):
+    model = Occurrence
+
+    def get_queryset(self):
+        return Occurrence.objects.upcoming()
+
+
+class SiteRelatedAgendaView(AgendaView):
+    def get_queryset(self):
+        return Occurrence.site_related.upcoming()
+
+class DateRangeMixin:
+    """
+        A mixin class for a view quering objects inside a date range
+
+        :Attributes:
+
+        * ``start`` The start date, defaults to the current date
+        * ``start_format`` The format of the start date. Defaults to
+          %Y-%m-%d
+        * ``end`` (Optional). The end date
+        * ``end_format`` The format of the end date. Defaults to
+          %Y-%m-%d
+    """
+
+    start = None
+    start_format = "%Y-%m-%d"
+
+    end = None
+    end_format = "%Y-%m-%d"
+
+    def get_start(self):
+        start = self.start
+
+        if start is None:
+            try:
+                start = self.kwargs['start']
+            except KeyError:
+                try:
+                    start = self.request.GET['start']
+                except KeyError:
+                    raise Http404(_("No start date specified"))
+
+        return start
+
+    def get_start_format(self):
+        return self.start_format
+
+    def get_end(self):
+        end = self.end
+
+        if end is None:
+            try:
+                end = self.kwargs['end']
+            except KeyError:
+                try:
+                    end = self.request.GET['end']
+                except KeyError:
+                    raise Http404(_("No end date specified"))
+
+        return end
+
+    def get_end_format(self):
+        return self.end_format
+
+
+class DateMixin2:
+    """
+        A class which is actually almost the same as the default django date mixin
+        class, but with different field names, so you can have two date fields.
+
+        This is useful if you have objects with for example a start and end date.
+    """
+
+    date_field2 = None
+
+    def get_date_field2(self):
+        if self.date_field2 is None:
+            raise ImproperlyConfigured(_("{}.date_field is required").format(
+                self.__class__.name))
+
+        return self.date_field2
+
+    @cached_property
+    def field2_uses_datetime(self):
+        model = self.get_queryset().model if self.model is None else self.model
+        field = model._meta.get_field(self.get_date_field2())
+
+        return isinstance(field, models.DateTimeField)
+
+    def _make_date_lookup_arg2(self, value):
+        """
+            Convert a date into a datetime when the date field is a DateTimeField.
+
+            When time zone support is enabled, `date` is assumed to be in the
+            current time zone, so that displayed items are consistent with the URL.
+        """
+        if self.field2_uses_datetime:
+            value = datetime.datetime.combine(value, datetime.time.min)
+            if settings.USE_TZ:
+                value = timezone.make_aware(value, timezone.get_current_timezone())
+        return value
+
+    def _make_single_date_lookup2(self, date):
+        """
+            Get the lookup kwargs for filtering on a single date.
+
+            If the date field is a DateTimeField, we can't just filter on
+            date_field=date because that doesn't take the time into account.
+        """
+
+        date_field = self.get_date_field2()
+        if self.field2_uses_datetime:
+            since = self._make_date_lookup_arg(date)
+            until = self._make_date_lookup_arg(date + datetime.timedelta(days=1))
+            return {
+                '%s__gte' % date_field: since,
+                '%s__lt' % date_field: until,
+            }
+        else:
+            # Skip self._make_date_lookup_arg, it's a no-op in this branch.
+            return {date_field: date}
+
+
+class BaseCalendarView(DateRangeMixin, DateMixin2, BaseDateListView):
+    """
+        A view to display objects in a given date range
+
+        Through ``BaseDateListView``, this class inhirits from ``DateMixin``. The
+        date field specified for this class is used for the start date.
+
+        We also inhirit from ``DateMixin2``, which adds date_field2. The field
+        specified in this attribute is used for the end date.
+    """
+
+    def get_dated_items(self):
+        """
+            Return (date_list, items, extra_context) for this request in a certain
+            date range
+        """
+
+        start = self.get_start()
+        end = self.get_end()
+
+        try:
+            date_start = datetime.strptime(start, self.get_start_format())
+        except ValueError:
+            raise Http404(_("Invalid date string '{datestr}' given format"
+                " '{format}'").format(datestr=start, format=self.get_start_format())
+            )
+
+        try:
+            date_end = datetime.strptime(end, self.get_end_format())
+        except ValueError:
+            raise Http404(_("Invalid date string '{datestr}' given format"
+                " '{format}'").format(datestr=end, format=self.get_end_format())
+            )
+
+        date_field = self.get_date_field()
+        date_field2 = self.get_date_field2()
+
+        # Select all objects which at least have some overlapping with the
+        # given range. This means the end date of an object should be greater
+        # than the given start date, and the start date of an object should be
+        # smaller than the given end date.
+        lookup_args = {
+            '%s_gte' % date_field2: date_start,
+            '%s_lte': date_field: date_end
+        }
+
+        qs = self.get_dated_queryset(ordering='%s' % date_field, **lookup_args)
+        date_list = self.get_date_list(qs)
+
+        return (date_list, qs, {})
+
 
 def event_listing(
     request,
