@@ -8,10 +8,11 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.http import JsonResponse, Http404
 from django.utils.functional import cached_property
+from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
-from django.views.generic.dates import YearMixin, MonthMixin, WeekMixin, DayMixin, \
-    BaseDateListView
-from django.contrib.sites.shortcuts import get_current_site
+from django.views.generic.list import MultipleObjectTemplateResponseMixin, ListView
+from django.views.generic.dates import BaseDateListView
 
 from swingtime.models import Event, Occurrence
 from swingtime import utils, forms
@@ -34,6 +35,7 @@ class JSONResponseMixin:
 
         return JsonResponse(
             self.get_data(context),
+            safe=False,
             **response_kwargs
         )
 
@@ -165,7 +167,7 @@ class DateMixin2:
             return {date_field: date}
 
 
-class BaseCalendarView(DateRangeMixin, DateMixin2, BaseDateListView):
+class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
     """
         A view to display objects in a given date range
 
@@ -175,6 +177,9 @@ class BaseCalendarView(DateRangeMixin, DateMixin2, BaseDateListView):
         We also inhirit from ``DateMixin2``, which adds date_field2. The field
         specified in this attribute is used for the end date.
     """
+
+    allow_future = True
+    allow_empty = True
 
     def get_dated_items(self):
         """
@@ -189,32 +194,72 @@ class BaseCalendarView(DateRangeMixin, DateMixin2, BaseDateListView):
             date_start = datetime.strptime(start, self.get_start_format())
         except ValueError:
             raise Http404(_("Invalid date string '{datestr}' given format"
-                " '{format}'").format(datestr=start, format=self.get_start_format())
-            )
+                " '{format}'").format(datestr=start, format=self.get_start_format()))
 
         try:
             date_end = datetime.strptime(end, self.get_end_format())
         except ValueError:
             raise Http404(_("Invalid date string '{datestr}' given format"
-                " '{format}'").format(datestr=end, format=self.get_end_format())
-            )
+                " '{format}'").format(datestr=end, format=self.get_end_format()))
 
         date_field = self.get_date_field()
         date_field2 = self.get_date_field2()
+
+        print(date_field, date_field2)
 
         # Select all objects which at least have some overlapping with the
         # given range. This means the end date of an object should be greater
         # than the given start date, and the start date of an object should be
         # smaller than the given end date.
-        lookup_args = {
-            '%s_gte' % date_field2: date_start,
-            '%s_lte': date_field: date_end
+        date_filter = {
+            '%s__gte' % date_field2: date_start,
+            '%s__lte' % date_field: date_end
         }
 
-        qs = self.get_dated_queryset(ordering='%s' % date_field, **lookup_args)
+        print(date_filter)
+
+        qs = self.get_dated_queryset(date_field, **date_filter)
         date_list = self.get_date_list(qs)
 
         return (date_list, qs, {})
+
+
+class BaseCalendarView(MultipleObjectTemplateResponseMixin, BaseDateRangeView):
+    template_name_suffix = "_calendar"
+
+
+class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
+    model = Occurrence
+    date_field = "start_time"
+    date_field2 = "end_time"
+
+    def get_queryset(self):
+        return self.model.objects.select_related('event')
+
+    def render_to_response(self, context, **kwargs):
+        context = self.get_context_data()
+
+        # return render(self.request, "test.html", context)
+        return self.render_to_json_response(context, **kwargs)
+
+    def get_data(self, context):
+        events = []
+
+        for occurrence in context['object_list']:
+            title = occurrence.event.title
+
+            if occurrence.description:
+                title = "{} - {}".format(occurrence.description, title)
+
+            events.append({
+                'id': occurrence.event.id,
+                'title': title,
+                'start': occurrence.start_time.strftime('%Y-%m-%dT%H:%M:%S%z'),
+                'end': occurrence.end_time.strftime('%Y-%m-%dT%H:%M:%S%z'),
+                'url': occurrence.get_absolute_url(),
+            })
+
+        return events
 
 
 def event_listing(
