@@ -98,6 +98,26 @@ class OccurrenceManager(models.Manager):
 
     use_for_related_fields = True
 
+    def upcoming(self, start=None, end=None):
+        """
+        Returns a queryset containing the upcoming occurences no matter what
+        event.
+
+        * ``start`` A datetime object with the minimum date and time an occurence
+          should have. Defaults to ``timezone.now()``.
+        * ``end`` (Optional). Only retrieve occurrences no later than the given
+          datetime object.
+        """
+
+        start = start or timezone.now()
+
+        qs = self.filter(start_time__gte=start)
+
+        if end:
+            qs.filter(start_time__lte=end)
+
+        return qs
+
     def daily_occurrences(self, dt=None, event=None):
         '''
         Returns a queryset of for instances that have any overlap with a
