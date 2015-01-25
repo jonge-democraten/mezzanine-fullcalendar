@@ -9,7 +9,7 @@ urlpatterns = patterns('',
     ),
 
     url(
-        r'^calendar/json/$',
+        r'^calendar.json$',
         views.CalendarJSONView.as_view(),
         name='swingtime-calendar-json'
     ),
