@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django import http
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import JsonResponse, Http404
 from django.utils.functional import cached_property
@@ -242,11 +243,23 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
             if occurrence.description:
                 title = "{} - {}".format(occurrence.description, title)
 
+            start_time = timezone.make_aware(occurrence.start_time,
+                timezone.get_default_timezone())
+
+            start_json = start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+            start_json = start_json[:-2] + ":" + start_json[-2:]
+
+            end_time = timezone.make_aware(occurrence.end_time,
+                timezone.get_default_timezone())
+
+            end_json = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+            end_json = end_json[:-2] + ":" + end_json[-2:]
+
             events.append({
-                'id': occurrence.event.id,
+                'id': str(occurrence.event.id),
                 'title': title,
-                'start': occurrence.start_time.strftime('%Y-%m-%dT%H:%M:%S%z'),
-                'end': occurrence.end_time.strftime('%Y-%m-%dT%H:%M:%S%z'),
+                'start': start_json,
+                'end': end_json,
                 'url': occurrence.get_absolute_url(),
             })
 
@@ -268,16 +281,26 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
         try:
             year = super(CalendarView, self).get_year()
         except Http404:
-            year - datetime.now().year
+            year = datetime.now().year
 
         return year
 
     def get_context_data(self, **kwargs):
         context = super(CalendarView, self).get_context_data(**kwargs)
 
+        current = datetime.now()
+
+        if current.month == self.get_month() and current.year == self.get_year():
+            day = current.day
+        else:
+            day = 1
+
+        dt = datetime(year=self.get_year(), month=self.get_month(), day=day)
+
         context.update({
-            'month': self.get_month(),
-            'year': self.get_year()
+            'json_uri': self.request.build_absolute_uri(
+                reverse('swingtime-calendar-json')),
+            'default_date': dt.strftime('%Y-%m-%d')
         })
 
         return context
