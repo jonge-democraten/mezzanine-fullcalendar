@@ -184,7 +184,7 @@ class Occurrence(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('swingtime-occurrence', [str(self.event.id), str(self.id)])
+        return ('swingtime-event', [str(self.event.id)])
 
     def __lt__(self, other):
         return self.start_time < other.start_time
