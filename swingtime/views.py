@@ -256,7 +256,7 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
 
 
 class CalendarView(YearMixin, MonthMixin, TemplateView):
-    template_name = "swingtime/calendar.html"
+    template_name = "events/calendar.html"
 
     def get_month(self):
         try:
