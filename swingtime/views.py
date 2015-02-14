@@ -227,11 +227,6 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
         events = []
 
         for occurrence in context['object_list']:
-            title = occurrence.event.title
-
-            if occurrence.description:
-                title = "{} - {}".format(occurrence.description, title)
-
             start_time = timezone.make_aware(occurrence.start_time,
                 timezone.get_default_timezone())
 
@@ -246,7 +241,7 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
 
             events.append({
                 'id': str(occurrence.event.id),
-                'title': title,
+                'title': occurrence.title,
                 'start': start_json,
                 'end': end_json,
                 'url': occurrence.get_absolute_url(),
