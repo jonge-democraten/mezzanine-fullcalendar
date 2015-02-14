@@ -21,7 +21,7 @@ urlpatterns = patterns('',
     ),
 
     url(
-        r'^calendar/(\d{4})/(0?[1-9]|1[012])/$',
+        r'^calendar/(?P<year>\d{4})/(?P<month>0?[1-9]|1[012])/$',
         views.CalendarView.as_view(),
         name='swingtime-monthly-view'
     ),
@@ -33,14 +33,8 @@ urlpatterns = patterns('',
     ),
 
     url(
-        r'^event/(\d+)/$',
-        views.event_view,
+        r'^event/(?P<id>\d+)/$',
+        views.EventView.as_view(),
         name='swingtime-event'
-    ),
-
-    url(
-        r'^event/(\d+)/occurrence/(\d+)/$',
-        views.occurrence_view,
-        name='swingtime-occurrence'
     ),
 )
