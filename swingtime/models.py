@@ -200,6 +200,10 @@ class Occurrence(models.Model):
     def event_type(self):
         return self.event.event_type
 
+    @property
+    def in_past(self):
+        return self.end_time > datetime.now()
+
 def create_event(
     title,
     event_category,
