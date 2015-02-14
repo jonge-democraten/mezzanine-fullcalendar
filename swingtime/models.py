@@ -191,7 +191,10 @@ class Occurrence(models.Model):
 
     @property
     def title(self):
-        return self.event.title
+        if self.description:
+            return "{0} ({1})".format(self.event.title, self.description)
+        else:
+            return self.event.title
 
     @property
     def event_type(self):
