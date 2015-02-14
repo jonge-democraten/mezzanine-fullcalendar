@@ -1,92 +1,36 @@
-Mezzanine fork of django-swingtime
-==================================
+Calendar application for Mezzanine using the fullcalendar.io widget
+===================================================================
 
-This is a fork of django-swingtime, which modifies the models to use the
-mezzanine core models. This integrates it more nicely with the rest of
-a mezzanine based website.
+Mezzanine-fullcalendar is a calendar application for
+`Mezzanine <http://mezzanine.jupo.org/>`_, using the awesome
+`fullcalendar.io <http://fullcalendar.io>`_ javascript widget, which provides
+a modern looking calendar.
 
-About Swingtime
-===============
+This project originally started out as a fork of `django-swingtime
+<https://github.com/dakrauth/django-swingtime>`_, but deviated so much from the
+original project, it is now a separate project.
 
-Welcome
--------
+Current features
+----------------
 
-Swingtime is a `Django <http://www.djangoproject.com/>`_ application similar to
-a stripped-down version of `iCal for Mac OS X <http://en.wikipedia.org/wiki/ICal>`_
-or `Google Calendar <http://www.google.com/intl/en/googlecalendar/tour.html>`_.
-Swingtime provides a ``models.Event`` model that acts as metadata container
-for one or more ``models.Occurrence`` objects, which describe specific
-start and end times.
+* Admin interface for managing events and their occurrences.
+* Event categories
+* Class based views for the calendar, JSON data, and an agenda view 
+  with upcoming events.
+* Support for multiple sites
 
-Swingtime relies heavily upon both the ``datetime`` standard library package and
-the ``dateutil`` package, featuring direct support for the ``dateutil.rrule`` 
-interface to create occurrences.
+Planned features
+----------------
 
-A fairly simple example::
-
-    >>> from datetime import *
-    >>> from swingtime import models as swingtime
-    >>> et = swingtime.EventType.objects.create(abbr='work', label='Work Related Events')
-    >>> evt = swingtime.Event.objects.create(
-    ...     title='New TPS Cover Sheet',
-    ...     description='Kiss off, Lumbergh!',
-    ...     event_type=et
-    ... )
-    >>> evt.add_occurrences(datetime(2013,4,1,16), datetime(2013,4,1,16,15), count=5)
-    >>> for o in evt.occurrence_set.all():
-    ...     print o
-    ... 
-    New TPS Cover Sheet: 2013-04-01T16:00:00
-    New TPS Cover Sheet: 2013-04-02T16:00:00
-    New TPS Cover Sheet: 2013-04-03T16:00:00
-    New TPS Cover Sheet: 2013-04-04T16:00:00
-    New TPS Cover Sheet: 2013-04-05T16:00:00
-
-A bit more elaborate example, using the the convenience function ``models.create_event``::
-    
-    >>> # pay day is the last Friday of the month at 5pm
-    >>> evt = swingtime.create_event(
-    ...     'Pay day',
-    ...     ('pay', 'Payroll'), # alternate means to add EventType on the fly
-    ...     freq=rrule.MONTHLY,
-    ...     byweekday=rrule.FR(-1),
-    ...     until=datetime(2013,8,1),
-    ...     start_time=datetime(2013,4,1,17)
-    ... )
-    >>> for o in evt.occurrence_set.all():
-    ...     print o
-    ... 
-    Pay day: 2013-04-26T17:00:00
-    Pay day: 2013-05-31T17:00:00
-    Pay day: 2013-06-28T17:00:00
-    Pay day: 2013-07-26T17:00:00
- 
-
-Features
---------
-
-* Support for adding complex event occurrences via ``dateutil``
-* Ready-made ``forms.MultipleOccurrenceForm`` for handling complex input
-* Daily, monthly, and annual view functions
-* Grid-based daily view generator, complete with alternating or sequential 
-  ``~models.EventType`` CSS-class handling
-* Slightly better than average documentation, a few test cases, and commented code
-* Active support (I have to eat my own dogfood)
-* Built-in demo project / application
+* Make use of the editing features of the fullcalendar javascript widget.
+* Create forms for easily adding new events through the calendar.
+* ICal export
+* More tests and docs
 
 Requirements
 ------------
 
-* `Django 1.5+ <http://www.djangoproject.com/download/>`_
-* Python 2.7, 3.4
-* The ``dateutil`` `package <http://labix.org/python-dateutil>`_.
+* Python 2.7+, 3.4+
+* Django 1.6+
+* python-dateutil
 
-
-Todo List
-=========
-
-* Add i18n support / translation support in demo
-* Add weekly view
-* Import and export .ics files
-* Add ``models.Note`` support to demo
-* Add more tests
