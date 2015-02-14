@@ -291,7 +291,7 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
 
 
 class AgendaView(ListView):
-    model = Occurrence
+    context_object_name = "occurrence_list"
     paginate_by = 20
 
     def get_queryset(self):
