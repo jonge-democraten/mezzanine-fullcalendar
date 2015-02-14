@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os, sys
+import os
+import sys
 
 try:
     from setuptools import setup
@@ -14,14 +15,15 @@ with open('README.rst', 'r') as f:
     long_description = f.read()
 
 # Dynamically calculate the version based on swingtime.VERSION.
-VERSION = __import__('swingtime').get_version()
+VERSION = __import__('fullcalendar').get_version()
 
 setup(
-    name='mezzanine-swingtime',
+    name='mezzanine-fullcalendar',
     version=VERSION,
-    url='https://github.com/jonge-democraten/mezzanine-swingtime',
+    url='https://github.com/jonge-democraten/mezzanine-fullcalendar',
     author_email='ict-team@jd.nl',
-    description='A Mezzanine calendaring application.',
+    description='A Mezzanine calendaring application using the fullcalendar.io '
+                'widget.',
     long_description=long_description,
     author='David A Krauth, Jonge Democraten',
     platforms=['any'],
@@ -34,6 +36,6 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
     ),
-    packages=['swingtime', 'swingtime.conf'],
-    install_requires=['python-dateutil', 'django>=1.5', 'mezzanine>=3.1']
+    packages=['fullcalendar', 'fullcalendar.conf'],
+    install_requires=['python-dateutil', 'django>=1.6', 'mezzanine>=3.1']
 )

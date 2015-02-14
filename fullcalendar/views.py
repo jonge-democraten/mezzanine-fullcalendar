@@ -13,7 +13,7 @@ from django.views.generic.list import MultipleObjectTemplateResponseMixin, ListV
 from django.views.generic.dates import BaseDateListView, YearMixin, MonthMixin
 from mezzanine.utils.sites import current_site_id
 
-from swingtime.models import Event, Occurrence
+from fullcalendar.models import Event, Occurrence
 
 class JSONResponseMixin:
     """
@@ -283,7 +283,7 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
 
         context.update({
             'json_uri': self.request.build_absolute_uri(
-                reverse('swingtime-calendar-json')),
+                reverse('fullcalendar-calendar-json')),
             'default_date': dt.strftime('%Y-%m-%d')
         })
 

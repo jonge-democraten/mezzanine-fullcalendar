@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-class SwingtimeAppConfig(AppConfig):
-    name = "swingtime"
+class FullCalendarAppConfig(AppConfig):
+    name = "fullcalendar"
     verbose_name = "events"
     label = "events"

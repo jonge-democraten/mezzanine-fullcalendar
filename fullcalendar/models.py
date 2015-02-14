@@ -6,7 +6,6 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from django.db import models
 from mezzanine.utils.sites import current_site_id
-
 from mezzanine.core.models import Displayable, RichText, SiteRelated
 
 __all__ = (
@@ -47,7 +46,7 @@ class Event(Displayable, RichText):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('swingtime-event', [str(self.id)])
+        return ('fullcalendar-event', [str(self.id)])
 
     def add_occurrences(self, start_time, end_time, **rrule_params):
         '''
@@ -184,7 +183,7 @@ class Occurrence(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('swingtime-event', [str(self.event.id)])
+        return ('fullcalendar-event', [str(self.event.id)])
 
     def __lt__(self, other):
         return self.start_time < other.start_time
@@ -230,13 +229,13 @@ def create_event(
 
     ``end_time``
         will default to ``start_time`` plus
-        swingtime_settings.DEFAULT_OCCURRENCE_DURATION hour if ``None``
+        fullcalendar_settings.DEFAULT_OCCURRENCE_DURATION hour if ``None``
 
     ``freq``, ``count``, ``rrule_params``
         follow the ``dateutils`` API (see http://labix.org/python-dateutil)
 
     '''
-    from swingtime.conf import settings as swingtime_settings
+    from fullcalendar.conf import settings as fullcalendar_settings
 
     if isinstance(event_category, str):
         event_category, created = EventCategory.objects.get_or_create(
@@ -256,6 +255,6 @@ def create_event(
     )
 
     end_time = end_time or \
-        start_time + swingtime_settings.DEFAULT_OCCURRENCE_DURATION
+        start_time + fullcalendar_settings.DEFAULT_OCCURRENCE_DURATION
     event.add_occurrences(start_time, end_time, **rrule_params)
     return event

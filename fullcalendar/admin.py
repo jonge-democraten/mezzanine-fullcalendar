@@ -2,7 +2,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib import admin
 from mezzanine.core.admin import TabularDynamicInlineAdmin, DisplayableAdmin
 
-from swingtime.models import *
+from fullcalendar.models import *
 
 class EventCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)

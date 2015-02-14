@@ -1,5 +1,0 @@
-python-dateutil
-Django<1.8
-django-extensions
-Sphinx
-mezzanine
