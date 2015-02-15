@@ -257,6 +257,6 @@ def create_event(
     )
 
     end_time = end_time or \
-        start_time + fullcalendar_settings.DEFAULT_OCCURRENCE_DURATION
+        start_time + fullcalendar_settings.FULLCALENDAR_OCCURRENCE_DURATION
     event.add_occurrences(start_time, end_time, **rrule_params)
     return event
