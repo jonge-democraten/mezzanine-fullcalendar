@@ -8,7 +8,7 @@ default = {
     'FULLCALENDAR_SITE_COLORS': {}
 }
 
-settings = object()
+settings = type('SettingsDummy', (), default)
 
 for key, value in default.items():
     setattr(settings, key,
