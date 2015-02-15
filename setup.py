@@ -36,6 +36,10 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
     ),
-    packages=['fullcalendar', 'fullcalendar.conf'],
+    packages=[
+        'fullcalendar',
+        'fullcalendar.migrations',
+        'fullcalendar.templatetags'
+    ],
     install_requires=['python-dateutil', 'django>=1.6', 'mezzanine>=3.1']
 )
