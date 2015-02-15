@@ -264,8 +264,13 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
                     if type(color) == str:
                         data['color'] = color
                     else:
-                        data['color'] = color[0]
-                        data['textColor'] = color[1]
+                        if len(color) == 2:
+                            data['color'] = color[0]
+                            data['textColor'] = color[1]
+                        elif len(color) > 2:
+                            data['backgroundColor'] = color[0]
+                            data['textColor'] = color[1]
+                            data['borderColor'] = color[2]
             else:
                 # Otherwise, use category color if set
                 if occurrence.event.event_category.color:
