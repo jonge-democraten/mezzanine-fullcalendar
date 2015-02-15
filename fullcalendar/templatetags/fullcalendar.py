@@ -1,4 +1,5 @@
 from django import template
+from django.utils import timezone
 
 from fullcalendar.models import Occurrence
 
@@ -45,3 +46,16 @@ def get_site_agenda(*args, **kwargs):
 
     return qs
 
+@register.simple_tag
+def occurrence_duration(occurrence):
+    start = timezone.localtime(occurrence.start_time)
+    end = timezone.localtime(occurrence.end_time)
+    result = start.strftime('%A, %d %B %Y %H:%M')
+
+    if (start.day == end.day and start.month == end.month and
+            start.year == end.year):
+        result += ' - {:%H:%M}'.format(end)
+    else:
+        result += ' - {:%A, %d %B %Y %H:%M}'.format(end)
+
+    return result
