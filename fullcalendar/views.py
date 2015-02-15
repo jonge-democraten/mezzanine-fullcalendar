@@ -211,7 +211,6 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
     date_field2 = "end_time"
 
     def get_queryset(self):
-        print(current_site_id())
         if current_site_id() == settings.SITE_ID:
             return self.model.objects.select_related('event')
         else:
@@ -273,13 +272,15 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
         context = super(CalendarView, self).get_context_data(**kwargs)
 
         current = datetime.now()
+        month = int(self.get_month())
+        year = int(self.get_year())
 
-        if current.month == self.get_month() and current.year == self.get_year():
+        if current.month == month and current.year == year:
             day = current.day
         else:
             day = 1
 
-        dt = datetime(year=self.get_year(), month=self.get_month(), day=day)
+        dt = datetime(year=year, month=month, day=day)
 
         context.update({
             'json_uri': self.request.build_absolute_uri(
