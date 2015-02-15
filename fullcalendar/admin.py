@@ -11,6 +11,8 @@ class OccurrenceInline(TabularDynamicInlineAdmin):
     model = Occurrence
     extra = 1
 
+    fields = ('start_time', 'end_time', 'description')
+
 class EventAdmin(DisplayableAdmin):
     list_display = ('title', 'event_category')
     list_filter = ('event_category',)
