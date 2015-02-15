@@ -226,14 +226,20 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
         events = []
 
         for occurrence in context['object_list']:
-            start_time = timezone.make_aware(occurrence.start_time,
-                timezone.get_default_timezone())
+            start_time = occurrence.start_time
+
+            if timezone.is_naive(start_time):
+                start_time = timezone.make_aware(start_time,
+                    timezone.get_default_timezone())
 
             start_json = start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
             start_json = start_json[:-2] + ":" + start_json[-2:]
 
-            end_time = timezone.make_aware(occurrence.end_time,
-                timezone.get_default_timezone())
+            end_time = occurrence.end_time
+
+            if timezone.is_naive(end_time):
+                end_time = timezone.make_aware(end_time,
+                    timezone.get_default_timezone())
 
             end_json = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
             end_json = end_json[:-2] + ":" + end_json[-2:]

@@ -1,6 +1,6 @@
 from datetime import datetime
-from dateutil import rrule
 
+from dateutil import rrule
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
@@ -23,6 +23,7 @@ class EventCategory(SiteRelated):
     '''
     name = models.CharField(_('name'), max_length=50, unique=True)
     description = models.CharField(_('description'), max_length=255)
+    color = models.CharField(_('color'), max_length=10, blank=True, null=True)
 
     class Meta:
         verbose_name = _('event category')
@@ -30,6 +31,7 @@ class EventCategory(SiteRelated):
 
     def __str__(self):
         return self.name
+
 
 @python_2_unicode_compatible
 class Event(Displayable, RichText):
@@ -201,7 +203,7 @@ class Occurrence(models.Model):
 
     @property
     def in_past(self):
-        return self.end_time > datetime.now()
+        return self.end_time > timezone.now()
 
 def create_event(
     title,
