@@ -212,17 +212,19 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
 
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
-            return self.model.objects.select_related('event')
+            return self.model.objects.select_related('event').select_related(
+                'event.category')
         else:
-            return self.model.site_related.select_related('event')
+            return self.model.site_related.select_related('event').select_related(
+                'event.category')
 
     def render_to_response(self, context, **kwargs):
         context = self.get_context_data()
 
-        # return render(self.request, "test.html", context)
         return self.render_to_json_response(context, **kwargs)
 
     def get_data(self, context):
+        from fullcalendar.conf import settings as fc_settings
         events = []
 
         for occurrence in context['object_list']:
@@ -244,13 +246,32 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
             end_json = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
             end_json = end_json[:-2] + ":" + end_json[-2:]
 
-            events.append({
+            data = {
                 'id': str(occurrence.event.id),
                 'title': occurrence.title,
                 'start': start_json,
                 'end': end_json,
                 'url': occurrence.get_absolute_url(),
-            })
+            }
+
+            # Determine color
+            if current_site_id() == settings.SITE_ID:
+                # Main site, display event color per subsite
+                event_site = occurrence.event.site.id
+
+                if event_site in fc_settings.FULLCALENDAR_SITE_COLORS:
+                    color = fc_settings.FULLCALENDAR_SITE_COLORS[event_site]
+                    if type(color) == str:
+                        data['color'] = color
+                    else:
+                        data['color'] = color[0]
+                        data['textColor'] = color[1]
+            else:
+                # Otherwise, use category color if set
+                if occurrence.event.event_category.color:
+                    data['color'] = occurrence.event.event_category.color
+
+            events.append(data)
 
         return events
 
