@@ -46,10 +46,6 @@ class Event(Displayable, RichText):
         verbose_name_plural = _('events')
         ordering = ('title',)
 
-    @models.permalink
-    def get_absolute_url(self):
-        return ('fullcalendar-event', [str(self.id)])
-
     def add_occurrences(self, start_time, end_time, **rrule_params):
         '''
         Add one or more occurences to the event using a comparable API to
@@ -185,7 +181,7 @@ class Occurrence(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('fullcalendar-event', [str(self.event.id)])
+        return ('fullcalendar-occurrence', [self.event.slug, str(self.id)])
 
     def __lt__(self, other):
         return self.start_time < other.start_time
@@ -198,12 +194,12 @@ class Occurrence(models.Model):
             return self.event.title
 
     @property
-    def event_type(self):
-        return self.event.event_type
+    def event_category(self):
+        return self.event.event_category
 
     @property
     def in_past(self):
-        return self.end_time > timezone.now()
+        return self.end_time < timezone.now()
 
 def create_event(
     title,
