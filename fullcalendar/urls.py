@@ -33,8 +33,8 @@ urlpatterns = patterns('',
     ),
 
     url(
-        r'^event/(?P<id>\d+)/$',
-        views.EventView.as_view(),
-        name='fullcalendar-event'
+        r'^event/(?P<event_slug>[\w-]+)/(?P<pk>\d+)/$',
+        views.OccurrenceView.as_view(),
+        name='fullcalendar-occurrence'
     ),
 )

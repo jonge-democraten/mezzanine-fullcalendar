@@ -333,8 +333,12 @@ class AgendaView(ListView):
         else:
             return Occurrence.site_related.upcoming()
 
-class EventView(DetailView):
-    queryset = Event.objects.all()
-    context_object_name = 'event'
+
+class OccurrenceView(DetailView):
+    context_object_name = 'occurrence'
+
+    def get_queryset(self):
+        return Occurrence.objects.select_related('event').filter(
+            event__slug=self.kwargs['event_slug'])
 
 
