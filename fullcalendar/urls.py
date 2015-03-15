@@ -37,4 +37,10 @@ urlpatterns = patterns('',
         views.OccurrenceView.as_view(),
         name='fullcalendar-occurrence'
     ),
+
+    url(
+        r'^ical/$',
+        views.ical_view,
+        name='fullcalendar-ical'
+    ),
 )

@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
@@ -12,6 +12,7 @@ from django.views.generic import TemplateView, DetailView
 from django.views.generic.list import MultipleObjectTemplateResponseMixin, ListView
 from django.views.generic.dates import BaseDateListView, YearMixin, MonthMixin
 from mezzanine.utils.sites import current_site_id
+import icalendar
 
 from fullcalendar.models import Event, Occurrence
 
@@ -341,4 +342,17 @@ class OccurrenceView(DetailView):
         return Occurrence.objects.select_related('event').filter(
             event__slug=self.kwargs['event_slug'])
 
+def ical_view(request):
+    qs = Occurrence.site_related.filter(start_time__gt=datetime.now()-timedelta(days=30))
+    cal = icalendar.Calendar()
+    cal.add('prodid', '-//JD-website//iCal Export//')
+    cal.add('version', '2.0')
 
+    for item in qs:
+        event = icalendar.Event()
+        event.add('summary', item.title)
+        event.add('dtstart', item.start_time)
+        event.add('dtend', item.end_time)
+
+        cal.add_component(event)
+    return HttpResponse(cal.to_ical(), content_type='text/calendar')
