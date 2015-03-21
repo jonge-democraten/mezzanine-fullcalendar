@@ -1,17 +1,17 @@
 from django.utils.translation import ugettext_lazy as _
 from django.contrib import admin
-from mezzanine.core.admin import TabularDynamicInlineAdmin, DisplayableAdmin
+from mezzanine.core.admin import StackedDynamicInlineAdmin, DisplayableAdmin
 
 from fullcalendar.models import *
 
 class EventCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
-class OccurrenceInline(TabularDynamicInlineAdmin):
+class OccurrenceInline(StackedDynamicInlineAdmin):
     model = Occurrence
     extra = 1
 
-    fields = ('start_time', 'end_time', 'description')
+    fields = ('start_time', 'end_time', 'description', 'location')
 
 class EventAdmin(DisplayableAdmin):
     list_display = ('title', 'event_category')
