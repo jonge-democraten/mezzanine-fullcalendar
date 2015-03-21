@@ -22,7 +22,8 @@ class EventCategory(SiteRelated):
 
     '''
     name = models.CharField(_('name'), max_length=50, unique=True)
-    description = models.CharField(_('description'), max_length=255)
+    description = models.CharField(_('description'), blank=True, null=True,
+        max_length=255)
     color = models.CharField(_('color'), max_length=10, blank=True, null=True)
 
     class Meta:
@@ -167,6 +168,7 @@ class Occurrence(models.Model):
     start_time = models.DateTimeField(_('start time'))
     end_time = models.DateTimeField(_('end time'))
     event = models.ForeignKey(Event, verbose_name=_('event'), editable=False)
+    location = models.CharField(_('location'), max_length=255, blank=True, null=True)
 
     objects = OccurrenceManager()
     site_related = SiteRelatedOccurrenceManager()
