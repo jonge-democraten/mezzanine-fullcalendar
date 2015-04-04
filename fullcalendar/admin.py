@@ -9,7 +9,6 @@ class EventCategoryAdmin(admin.ModelAdmin):
 
 class OccurrenceInline(StackedDynamicInlineAdmin):
     model = Occurrence
-    extra = 1
 
     fields = ('start_time', 'end_time', 'description', 'location')
 
