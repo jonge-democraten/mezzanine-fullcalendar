@@ -19,7 +19,7 @@ def show_agenda(*args, **kwargs):
 
 @register.assignment_tag
 def get_agenda(*args, **kwargs):
-    qs = Occurrence.site_related.upcoming()
+    qs = Occurrence.objects.upcoming()
 
     if 'limit' in kwargs:
         return qs[:int(kwargs['limit'])]
@@ -40,6 +40,17 @@ def show_site_agenda(*args, **kwargs):
 @register.assignment_tag
 def get_site_agenda(*args, **kwargs):
     qs = Occurrence.site_related.upcoming()
+
+    if 'limit' in kwargs:
+        return qs[:int(kwargs['limit'])]
+
+    return qs
+
+@register.assignment_tag
+def get_site_and_main_agenda(*args, **kwargs):
+    qs_main = Occurrence.objects.upcoming().filter(event__event_category__site__id__exact=1)
+    qs_site = get_site_agenda(*args, **kwargs)
+    qs = qs_main | qs_site
 
     if 'limit' in kwargs:
         return qs[:int(kwargs['limit'])]
