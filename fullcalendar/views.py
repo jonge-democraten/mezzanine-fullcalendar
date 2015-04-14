@@ -274,7 +274,8 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
                             data['borderColor'] = color[2]
             else:
                 # Otherwise, use category color if set
-                if occurrence.event.event_category.color:
+                if (occurrence.event.event_category and
+                        occurrence.event.event_category.color):
                     data['color'] = occurrence.event.event_category.color
 
             events.append(data)
