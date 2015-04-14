@@ -9,12 +9,14 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.views.generic import TemplateView, DetailView
-from django.views.generic.list import MultipleObjectTemplateResponseMixin, ListView
+from django.views.generic.list import MultipleObjectTemplateResponseMixin, \
+    ListView
 from django.views.generic.dates import BaseDateListView, YearMixin, MonthMixin
 from mezzanine.utils.sites import current_site_id
 import icalendar
 
-from fullcalendar.models import Event, Occurrence
+from fullcalendar.models import Occurrence
+
 
 class JSONResponseMixin:
     """
@@ -93,10 +95,12 @@ class DateRangeMixin:
 
 class DateMixin2:
     """
-        A class which is actually almost the same as the default django date mixin
-        class, but with different field names, so you can have two date fields.
+        A class which is actually almost the same as the default django date
+        mixin class, but with different field names, so you can have two date
+        fields.
 
-        This is useful if you have objects with for example a start and end date.
+        This is useful if you have objects with for example a start and end
+        date.
     """
 
     date_field2 = None
@@ -117,15 +121,18 @@ class DateMixin2:
 
     def _make_date_lookup_arg2(self, value):
         """
-            Convert a date into a datetime when the date field is a DateTimeField.
+            Convert a date into a datetime when the date field is a
+            DateTimeField.
 
             When time zone support is enabled, `date` is assumed to be in the
-            current time zone, so that displayed items are consistent with the URL.
+            current time zone, so that displayed items are consistent with the
+            URL.
         """
         if self.field2_uses_datetime:
             value = datetime.datetime.combine(value, datetime.time.min)
             if settings.USE_TZ:
-                value = timezone.make_aware(value, timezone.get_current_timezone())
+                value = timezone.make_aware(value,
+                                            timezone.get_current_timezone())
         return value
 
     def _make_single_date_lookup2(self, date):
@@ -139,7 +146,8 @@ class DateMixin2:
         date_field = self.get_date_field2()
         if self.field2_uses_datetime:
             since = self._make_date_lookup_arg(date)
-            until = self._make_date_lookup_arg(date + datetime.timedelta(days=1))
+            until = self._make_date_lookup_arg(date +
+                                               datetime.timedelta(days=1))
             return {
                 '%s__gte' % date_field: since,
                 '%s__lt' % date_field: until,
@@ -153,8 +161,8 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
     """
         A view to display objects in a given date range
 
-        Through ``BaseDateListView``, this class inhirits from ``DateMixin``. The
-        date field specified for this class is used for the start date.
+        Through ``BaseDateListView``, this class inhirits from ``DateMixin``.
+        The date field specified for this class is used for the start date.
 
         We also inhirit from ``DateMixin2``, which adds date_field2. The field
         specified in this attribute is used for the end date.
@@ -165,8 +173,8 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
 
     def get_dated_items(self):
         """
-            Return (date_list, items, extra_context) for this request in a certain
-            date range
+            Return (date_list, items, extra_context) for this request in a
+            certain date range
         """
 
         start = self.get_start()
@@ -175,14 +183,18 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
         try:
             date_start = datetime.strptime(start, self.get_start_format())
         except ValueError:
-            raise Http404(_("Invalid date string '{datestr}' given format"
-                " '{format}'").format(datestr=start, format=self.get_start_format()))
+            raise Http404(_(
+                "Invalid date string '{datestr}' given format"
+                " '{format}'"
+            ).format(datestr=start, format=self.get_start_format()))
 
         try:
             date_end = datetime.strptime(end, self.get_end_format())
         except ValueError:
-            raise Http404(_("Invalid date string '{datestr}' given format"
-                " '{format}'").format(datestr=end, format=self.get_end_format()))
+            raise Http404(_(
+                "Invalid date string '{datestr}' given format"
+                " '{format}"
+            ).format(datestr=end, format=self.get_end_format()))
 
         date_field = self.get_date_field()
         date_field2 = self.get_date_field2()
@@ -216,8 +228,11 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
             return self.model.objects.select_related('event').select_related(
                 'event.category')
         else:
-            return self.model.site_related.select_related('event').select_related(
-                'event.category')
+            return self.model.site_related.select_related(
+                'event'
+            ).select_related(
+                'event.category'
+            )
 
     def render_to_response(self, context, **kwargs):
         context = self.get_context_data()
@@ -232,8 +247,10 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
             start_time = occurrence.start_time
 
             if timezone.is_naive(start_time):
-                start_time = timezone.make_aware(start_time,
-                    timezone.get_default_timezone())
+                start_time = timezone.make_aware(
+                    start_time,
+                    timezone.get_default_timezone()
+                )
 
             start_json = start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
             start_json = start_json[:-2] + ":" + start_json[-2:]
@@ -241,8 +258,10 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
             end_time = occurrence.end_time
 
             if timezone.is_naive(end_time):
-                end_time = timezone.make_aware(end_time,
-                    timezone.get_default_timezone())
+                end_time = timezone.make_aware(
+                    end_time,
+                    timezone.get_default_timezone()
+                )
 
             end_json = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
             end_json = end_json[:-2] + ":" + end_json[-2:]
@@ -343,8 +362,11 @@ class OccurrenceView(DetailView):
         return Occurrence.objects.select_related('event').filter(
             event__slug=self.kwargs['event_slug'])
 
+
 def ical_view(request):
-    qs = Occurrence.site_related.filter(start_time__gt=datetime.now()-timedelta(days=30))
+    qs = Occurrence.site_related.filter(
+        start_time__gt=datetime.now() - timedelta(days=30)
+    )
     cal = icalendar.Calendar()
     cal.add('prodid', '-//JD-website//iCal Export//')
     cal.add('version', '2.0')
