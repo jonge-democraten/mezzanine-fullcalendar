@@ -271,7 +271,8 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
                 'title': occurrence.title,
                 'start': start_json,
                 'end': end_json,
-                'url': occurrence.get_absolute_url(),
+                'url': "//" + occurrence.event.site.domain +
+                       occurrence.get_absolute_url(),
             }
 
             # Determine color
