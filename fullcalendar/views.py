@@ -225,14 +225,14 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
 
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
-            return self.model.objects.select_related('event').select_related(
-                'event.category').published()
+            return self.model.objects.published().select_related(
+                'event').select_related('event.category')
         else:
-            return self.model.site_related.select_related(
+            return self.model.site_related.published().select_related(
                 'event'
             ).select_related(
                 'event.category'
-            ).published()
+            )
 
     def render_to_response(self, context, **kwargs):
         context = self.get_context_data()
