@@ -23,7 +23,7 @@ class EventCategory(SiteRelated):
     Simple ``Event`` classifcation.
 
     '''
-    name = models.CharField(_('name'), max_length=50, unique=True)
+    name = models.CharField(_('name'), max_length=50)
     description = models.CharField(_('description'), blank=True, null=True,
                                    max_length=255)
     color = models.CharField(_('color'), max_length=10, blank=True, null=True)
