@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from django.db import models
+from django.db.models import Q
 from mezzanine.utils.sites import current_site_id
 from mezzanine.core.models import Displayable, RichText, SiteRelated
 
@@ -15,6 +16,7 @@ __all__ = (
     'create_event'
 )
 
+
 @python_2_unicode_compatible
 class EventCategory(SiteRelated):
     '''
@@ -23,7 +25,7 @@ class EventCategory(SiteRelated):
     '''
     name = models.CharField(_('name'), max_length=50, unique=True)
     description = models.CharField(_('description'), blank=True, null=True,
-        max_length=255)
+                                   max_length=255)
     color = models.CharField(_('color'), max_length=10, blank=True, null=True)
 
     class Meta:
@@ -39,8 +41,10 @@ class Event(Displayable, RichText):
     '''
     Container model for general metadata and associated ``Occurrence`` entries.
     '''
-    event_category = models.ForeignKey(EventCategory,
-        verbose_name=_('event category'), blank=True, null=True)
+    event_category = models.ForeignKey(
+        EventCategory,
+        verbose_name=_('event category'), blank=True, null=True
+    )
 
     class Meta:
         verbose_name = _('event')
@@ -77,7 +81,8 @@ class Event(Displayable, RichText):
         Return all occurrences that are set to start on or after the current
         time.
         '''
-        return self.occurrence_set.filter(start_time__gte=datetime.now())
+        return self.occurrence_set.published().filter(
+            start_time__gte=datetime.now())
 
     def next_occurrence(self):
         '''
@@ -98,6 +103,31 @@ class OccurrenceManager(models.Manager):
 
     use_for_related_fields = True
 
+    def get_queryset(self):
+        """
+        Occurrence objects will mostly also need information from its
+        event object, so join it by default
+        """
+        qs = super(OccurrenceManager, self).get_queryset()
+
+        return qs.select_related('event')
+
+    def published(self, for_user=None):
+        """
+        For non-staff users, return items with a published status and
+        whose publish and expiry dates fall before and after the
+        current date when specified.
+        """
+        from mezzanine.core.models import CONTENT_STATUS_PUBLISHED
+        if for_user is not None and for_user.is_staff:
+            return self.all()
+        return self.filter(
+            Q(event__publish_date__lte=timezone.now()) | Q(
+                event__publish_date__isnull=True),
+            Q(event__expiry_date__gte=timezone.now()) | Q(
+                event__expiry_date__isnull=True),
+            Q(event__status=CONTENT_STATUS_PUBLISHED))
+
     def upcoming(self, start=None, end=None):
         """
         Returns a queryset containing the upcoming occurences no matter what
@@ -111,7 +141,7 @@ class OccurrenceManager(models.Manager):
 
         start = start or timezone.now()
 
-        qs = self.filter(start_time__gte=start)
+        qs = self.published().filter(start_time__gte=start)
 
         if end:
             qs.filter(start_time__lte=end)
@@ -131,7 +161,7 @@ class OccurrenceManager(models.Manager):
         dt = dt or datetime.now()
         start = datetime(dt.year, dt.month, dt.day)
         end = start.replace(hour=23, minute=59, second=59)
-        qs = self.filter(
+        qs = self.published().filter(
             models.Q(
                 start_time__gte=start,
                 start_time__lte=end,
@@ -152,7 +182,7 @@ class OccurrenceManager(models.Manager):
 class SiteRelatedOccurrenceManager(OccurrenceManager):
     def get_queryset(self):
         qs = super(SiteRelatedOccurrenceManager, self).get_queryset()
-        qs = qs.select_related('event').filter(
+        qs = qs.filter(
             event__site__id__exact=current_site_id())
 
         return qs
@@ -202,6 +232,7 @@ class Occurrence(models.Model):
     @property
     def in_past(self):
         return self.end_time < timezone.now()
+
 
 def create_event(
     title,

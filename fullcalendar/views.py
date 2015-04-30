@@ -226,13 +226,13 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
             return self.model.objects.select_related('event').select_related(
-                'event.category')
+                'event.category').published()
         else:
             return self.model.site_related.select_related(
                 'event'
             ).select_related(
                 'event.category'
-            )
+            ).published()
 
     def render_to_response(self, context, **kwargs):
         context = self.get_context_data()
@@ -365,7 +365,7 @@ class OccurrenceView(DetailView):
 
 
 def ical_view(request):
-    qs = Occurrence.site_related.filter(
+    qs = Occurrence.site_related.published().filter(
         start_time__gt=datetime.now() - timedelta(days=30)
     )
     cal = icalendar.Calendar()
