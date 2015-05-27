@@ -380,3 +380,14 @@ def ical_view(request):
 
         cal.add_component(event)
     return HttpResponse(cal.to_ical(), content_type='text/calendar')
+
+def html_view(request):
+    qs = Occurrence.site_related.published().filter(
+        start_time__gt=datetime.now() - timedelta(days=30)
+    )
+    output = "<h2>Agenda</h2>"
+    for item in qs:
+        output += "<h3>{0}: {1}</h3>".format(item.start_time.strftime("%x"),
+            item.event.title)
+        output += "<p>{0}</p>".format(item.description)
+    return HttpResponse(output)

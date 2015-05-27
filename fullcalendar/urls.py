@@ -43,4 +43,10 @@ urlpatterns = patterns('',
         views.ical_view,
         name='fullcalendar-ical'
     ),
+
+    url(
+        r'^html/$',
+        views.html_view,
+        name='fullcalendar-html'
+    ),
 )
