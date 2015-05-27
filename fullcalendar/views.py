@@ -388,6 +388,6 @@ def html_view(request):
     output = "<h2>Agenda</h2>"
     for item in qs:
         output += "<h3>{0}: {1}</h3>".format(item.start_time.strftime("%x"),
-            item.event.title)
-        output += "<p>{0}</p>".format(item.description)
+            item.title)
+        output += "<p>{0}</p>".format(item.event.description)
     return HttpResponse(output)
