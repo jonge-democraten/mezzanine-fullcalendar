@@ -51,6 +51,14 @@ class Event(Displayable, RichText):
         verbose_name_plural = _('events')
         ordering = ('title',)
 
+    @models.permalink
+    def get_absolute_url(self):
+        occurrences = Occurrence.objects.filter(event__id=self.id)
+        if occurrences: # Return first occurrence of the event if it exists...
+            return ('fullcalendar-occurrence', [self.slug, str(occurrences[0].id)])
+        else: # Otherwise, return the calendar
+            return ('fullcalendar-calendar', [])
+
     def add_occurrences(self, start_time, end_time, **rrule_params):
         '''
         Add one or more occurences to the event using a comparable API to
