@@ -1,6 +1,9 @@
-from django.utils import timezone
+from django.conf import settings
 from django.contrib.sites.models import Site
+from django.utils import timezone
+
 from mezzanine import template
+from mezzanine.utils.sites import current_site_id
 
 from fullcalendar.models import Occurrence
 
@@ -91,6 +94,8 @@ def events_site_legend():
     context = {
         'legend': {}
     }
+    if current_site_id() != settings.SITE_ID:
+        return context
     for site, color in fc_settings.FULLCALENDAR_SITE_COLORS.items():
         data = {}
         if type(color) == str:
