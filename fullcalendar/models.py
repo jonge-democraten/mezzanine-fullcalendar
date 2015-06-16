@@ -5,9 +5,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from django.db import models
-from django.db.models import Q
-from mezzanine.utils.sites import current_site_id
 from mezzanine.core.models import Displayable, RichText, SiteRelated
+from mezzanine.core.managers import SearchableManager
+from mezzanine.core.managers import PublishedManager
+from mezzanine.core.managers import CurrentSiteManager
+
 
 __all__ = (
     'EventCategory',
@@ -50,6 +52,12 @@ class Event(Displayable, RichText):
         verbose_name = _('event')
         verbose_name_plural = _('events')
         ordering = ('title',)
+
+    def save(self, *args, **kwargs):
+        super(Event, self).save(*args, **kwargs)
+        my_occurrences = Occurrence.objects.filter(event__id=self.id)
+        for occurrence in my_occurrences:
+            occurrence.save()
 
     @models.permalink
     def get_absolute_url(self):
@@ -107,7 +115,7 @@ class Event(Displayable, RichText):
         return Occurrence.objects.daily_occurrences(dt=dt, event=self)
 
 
-class OccurrenceManager(models.Manager):
+class OccurrenceManager(PublishedManager, SearchableManager):
 
     use_for_related_fields = True
 
@@ -119,22 +127,6 @@ class OccurrenceManager(models.Manager):
         qs = super(OccurrenceManager, self).get_queryset()
 
         return qs.select_related('event')
-
-    def published(self, for_user=None):
-        """
-        For non-staff users, return items with a published status and
-        whose publish and expiry dates fall before and after the
-        current date when specified.
-        """
-        from mezzanine.core.models import CONTENT_STATUS_PUBLISHED
-        if for_user is not None and for_user.is_staff:
-            return self.all()
-        return self.filter(
-            Q(event__publish_date__lte=timezone.now()) | Q(
-                event__publish_date__isnull=True),
-            Q(event__expiry_date__gte=timezone.now()) | Q(
-                event__expiry_date__isnull=True),
-            Q(event__status=CONTENT_STATUS_PUBLISHED))
 
     def upcoming(self, start=None, end=None):
         """
@@ -187,22 +179,17 @@ class OccurrenceManager(models.Manager):
         return qs.filter(event=event) if event else qs
 
 
-class SiteRelatedOccurrenceManager(OccurrenceManager):
+class SiteRelatedOccurrenceManager(CurrentSiteManager, OccurrenceManager):
     def get_queryset(self):
-        qs = super(SiteRelatedOccurrenceManager, self).get_queryset()
-        qs = qs.filter(
-            event__site__id__exact=current_site_id())
-
-        return qs
+        return super(SiteRelatedOccurrenceManager, self).get_queryset()
 
 
 @python_2_unicode_compatible
-class Occurrence(models.Model):
+class Occurrence(Displayable):
     '''
     Represents the start end time for a specific occurrence of a master ``Event``
     object.
     '''
-    description = models.CharField(max_length=100, blank=True, null=True)
     start_time = models.DateTimeField(_('start time'))
     end_time = models.DateTimeField(_('end time'))
     event = models.ForeignKey(Event, verbose_name=_('event'), editable=False)
@@ -217,7 +204,7 @@ class Occurrence(models.Model):
         ordering = ('start_time', 'end_time')
 
     def __str__(self):
-        return '%s: %s' % (self.title, self.start_time.isoformat())
+        return '%s: %s' % (self.title, self.start_time.strftime('%Y-%m-%d - %H:%M'))
 
     @models.permalink
     def get_absolute_url(self):
@@ -227,19 +214,23 @@ class Occurrence(models.Model):
         return self.start_time < other.start_time
 
     @property
-    def title(self):
-        if self.description:
-            return "{0} ({1})".format(self.event.title, self.description)
-        else:
-            return self.event.title
-
-    @property
     def event_category(self):
         return self.event.event_category
 
     @property
     def in_past(self):
         return self.end_time < timezone.now()
+
+    def save(self, *args, **kwargs):
+        self.gen_description = False
+        if self.description:
+            self.title = self.event.title + ' (' + self.description + ')'
+        else:
+            self.title = self.event.title
+        self.status = self.event.status
+        self.publish_date = self.event.publish_date
+        self.expiry_date = self.event.expiry_date
+        super(Occurrence, self).save(*args, **kwargs)
 
 
 def create_event(
