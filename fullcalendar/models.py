@@ -181,7 +181,8 @@ class OccurrenceManager(PublishedManager, SearchableManager):
 
 class SiteRelatedOccurrenceManager(CurrentSiteManager, OccurrenceManager):
     def get_queryset(self):
-        return super(SiteRelatedOccurrenceManager, self).get_queryset()
+        # the intersection of the query sets of both managers
+        return CurrentSiteManager.get_queryset(self) & OccurrenceManager.get_queryset(self)
 
 
 @python_2_unicode_compatible
