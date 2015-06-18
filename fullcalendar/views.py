@@ -225,10 +225,10 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
 
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
-            return self.model.objects.published().select_related(
+            return self.model.objects.published(for_user=self.request.user).select_related(
                 'event').select_related('event.category')
         else:
-            return self.model.site_related.published().select_related(
+            return self.model.site_related.published(for_user=self.request.user).select_related(
                 'event'
             ).select_related(
                 'event.category'
@@ -360,12 +360,12 @@ class OccurrenceView(DetailView):
     context_object_name = 'occurrence'
 
     def get_queryset(self):
-        return Occurrence.objects.select_related('event').filter(
+        return Occurrence.objects.published(for_user=self.request.user).select_related('event').filter(
             event__slug=self.kwargs['event_slug'])
 
 
 def ical_view(request):
-    qs = Occurrence.site_related.published().filter(
+    qs = Occurrence.site_related.published(for_user=request.user).filter(
         start_time__gt=datetime.now() - timedelta(days=30)
     )
     cal = icalendar.Calendar()
@@ -382,7 +382,7 @@ def ical_view(request):
     return HttpResponse(cal.to_ical(), content_type='text/calendar')
 
 def html_view(request):
-    qs = Occurrence.site_related.published().filter(
+    qs = Occurrence.site_related.published(for_user=request.user).filter(
         start_time__gt=datetime.now() - timedelta(days=30)
     )
     output = "<h2>Agenda</h2>"
