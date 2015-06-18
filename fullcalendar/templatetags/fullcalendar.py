@@ -58,7 +58,7 @@ def get_site_agenda(*args, **kwargs):
 @register.assignment_tag
 def get_site_and_main_agenda(*args, **kwargs):
     qs_main = Occurrence.objects.upcoming().filter(
-        event__event_category__site__id__exact=1)
+        event__site__id__exact=1)
     qs_site = get_site_agenda(*args, **kwargs)
     qs = qs_main | qs_site
 
