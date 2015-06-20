@@ -10,9 +10,9 @@ from fullcalendar.models import Occurrence
 register = template.Library()
 
 
-@register.inclusion_tag('events/agenda_tag.html')
-def show_agenda(*args, **kwargs):
-    qs = Occurrence.objects.upcoming()
+@register.inclusion_tag('events/agenda_tag.html', takes_context=True)
+def show_agenda(context, *args, **kwargs):
+    qs = Occurrence.objects.upcoming(for_user=context['request'].user)
 
     if 'limit' in kwargs:
         qs = qs[:int(kwargs['limit'])]
@@ -23,9 +23,9 @@ def show_agenda(*args, **kwargs):
     }
 
 
-@register.assignment_tag
-def get_agenda(*args, **kwargs):
-    qs = Occurrence.objects.upcoming()
+@register.assignment_tag(takes_context=True)
+def get_agenda(context, *args, **kwargs):
+    qs = Occurrence.objects.upcoming(for_user=context['request'].user)
 
     if 'limit' in kwargs:
         return qs[:int(kwargs['limit'])]
@@ -33,9 +33,9 @@ def get_agenda(*args, **kwargs):
     return qs
 
 
-@register.inclusion_tag('events/agenda_tag.html')
-def show_site_agenda(*args, **kwargs):
-    qs = Occurrence.site_related.upcoming()
+@register.inclusion_tag('events/agenda_tag.html', takes_context=True)
+def show_site_agenda(context, *args, **kwargs):
+    qs = Occurrence.site_related.upcoming(for_user=context['request'].user)
 
     if 'limit' in kwargs:
         qs = qs[:int(kwargs['limit'])]
@@ -45,9 +45,9 @@ def show_site_agenda(*args, **kwargs):
     }
 
 
-@register.assignment_tag
-def get_site_agenda(*args, **kwargs):
-    qs = Occurrence.site_related.upcoming()
+@register.assignment_tag(takes_context=True)
+def get_site_agenda(context, *args, **kwargs):
+    qs = Occurrence.site_related.upcoming(for_user=context['request'].user)
 
     if 'limit' in kwargs:
         return qs[:int(kwargs['limit'])]
@@ -55,11 +55,11 @@ def get_site_agenda(*args, **kwargs):
     return qs
 
 
-@register.assignment_tag
-def get_site_and_main_agenda(*args, **kwargs):
-    qs_main = Occurrence.objects.upcoming().filter(
+@register.assignment_tag(takes_context=True)
+def get_site_and_main_agenda(context, *args, **kwargs):
+    qs_main = Occurrence.objects.upcoming(for_user=context['request'].user).filter(
         event__site__id__exact=1)
-    qs_site = get_site_agenda(*args, **kwargs)
+    qs_site = get_site_agenda(context, *args, **kwargs)
     qs = qs_main | qs_site
 
     if 'limit' in kwargs:

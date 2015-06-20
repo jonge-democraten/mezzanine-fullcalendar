@@ -351,9 +351,9 @@ class AgendaView(ListView):
 
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
-            return Occurrence.objects.upcoming()
+            return Occurrence.objects.upcoming(for_user=self.request.user)
         else:
-            return Occurrence.site_related.upcoming()
+            return Occurrence.site_related.upcoming(for_user=self.request.user)
 
 
 class OccurrenceView(DetailView):

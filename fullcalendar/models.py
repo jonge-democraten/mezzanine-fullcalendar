@@ -128,7 +128,7 @@ class OccurrenceManager(PublishedManager, SearchableManager):
 
         return qs.select_related('event')
 
-    def upcoming(self, start=None, end=None):
+    def upcoming(self, start=None, end=None, for_user=None):
         """
         Returns a queryset containing the upcoming occurences no matter what
         event.
@@ -141,7 +141,7 @@ class OccurrenceManager(PublishedManager, SearchableManager):
 
         start = start or timezone.now()
 
-        qs = self.published().filter(start_time__gte=start)
+        qs = self.published(for_user=for_user).filter(start_time__gte=start)
 
         if end:
             qs.filter(start_time__lte=end)
