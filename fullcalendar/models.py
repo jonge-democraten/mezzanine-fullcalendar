@@ -98,7 +98,7 @@ class Event(Displayable, RichText):
         time.
         '''
         return self.occurrence_set.published().filter(
-            start_time__gte=datetime.now())
+            start_time__gte=timezone.now())
 
     def next_occurrence(self):
         '''
@@ -158,8 +158,9 @@ class OccurrenceManager(PublishedManager, SearchableManager):
 
         * ``event`` can be an ``Event`` instance for further filtering.
         '''
-        dt = dt or datetime.now()
+        dt = dt or timezone.now()
         start = datetime(dt.year, dt.month, dt.day)
+        start = timezone.make_aware(start, timezone.utc)
         end = start.replace(hour=23, minute=59, second=59)
         qs = self.published().filter(
             models.Q(
@@ -279,7 +280,7 @@ def create_event(
         event_category=event_category
     )
 
-    start_time = start_time or datetime.now().replace(
+    start_time = start_time or timezone.now().replace(
         minute=0,
         second=0,
         microsecond=0

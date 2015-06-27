@@ -181,7 +181,8 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
         end = self.get_end()
 
         try:
-            date_start = datetime.strptime(start, self.get_start_format())
+            start_time = datetime.strptime(start, self.get_start_format())
+            date_start = timezone.make_aware(start_time, timezone.utc)
         except ValueError:
             raise Http404(_(
                 "Invalid date string '{datestr}' given format"
@@ -189,7 +190,8 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
             ).format(datestr=start, format=self.get_start_format()))
 
         try:
-            date_end = datetime.strptime(end, self.get_end_format())
+            end_time = datetime.strptime(end, self.get_end_format())
+            date_end = timezone.make_aware(end_time, timezone.utc)
         except ValueError:
             raise Http404(_(
                 "Invalid date string '{datestr}' given format"
@@ -310,7 +312,7 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
         try:
             month = super(CalendarView, self).get_month()
         except Http404:
-            month = datetime.now().month
+            month = timezone.now().month
 
         return month
 
@@ -318,14 +320,14 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
         try:
             year = super(CalendarView, self).get_year()
         except Http404:
-            year = datetime.now().year
+            year = timezone.now().year
 
         return year
 
     def get_context_data(self, **kwargs):
         context = super(CalendarView, self).get_context_data(**kwargs)
 
-        current = datetime.now()
+        current = timezone.now()
         month = int(self.get_month())
         year = int(self.get_year())
 
@@ -366,7 +368,7 @@ class OccurrenceView(DetailView):
 
 def ical_view(request):
     qs = Occurrence.site_related.published(for_user=request.user).filter(
-        start_time__gt=datetime.now() - timedelta(days=30)
+        start_time__gt=timezone.now() - timedelta(days=30)
     )
     cal = icalendar.Calendar()
     cal.add('prodid', '-//JD-website//iCal Export//')
@@ -383,7 +385,7 @@ def ical_view(request):
 
 def html_view(request):
     qs = Occurrence.site_related.published(for_user=request.user).filter(
-        start_time__gt=datetime.now() - timedelta(days=30)
+        start_time__gt=timezone.now() - timedelta(days=30)
     )
     output = "<h2>Agenda</h2>"
     for item in qs:
