@@ -56,6 +56,17 @@ def get_site_agenda(context, *args, **kwargs):
 
 
 @register.assignment_tag(takes_context=True)
+def get_main_agenda(context, *args, **kwargs):
+    qs_main = Occurrence.objects.upcoming(for_user=context['request'].user).filter(
+        event__site__id__exact=1)
+
+    if 'limit' in kwargs:
+        return qs_main[:int(kwargs['limit'])]
+
+    return qs_main
+
+
+@register.assignment_tag(takes_context=True)
 def get_site_and_main_agenda(context, *args, **kwargs):
     qs_main = Occurrence.objects.upcoming(for_user=context['request'].user).filter(
         event__site__id__exact=1)
