@@ -51,7 +51,7 @@ class Event(Displayable, RichText):
     class Meta:
         verbose_name = _('event')
         verbose_name_plural = _('events')
-        ordering = ('title',)
+        ordering = ('-publish_date',)
 
     def save(self, *args, **kwargs):
         super(Event, self).save(*args, **kwargs)
