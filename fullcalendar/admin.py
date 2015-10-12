@@ -15,7 +15,7 @@ class OccurrenceInline(StackedDynamicInlineAdmin):
 class EventAdmin(DisplayableAdmin):
     list_display = ('title', 'event_category', 'status')
     list_filter = ('event_category',)
-    search_fields = ('title', 'description', 'content', 'keywords')
+    search_fields = ('title', 'description', 'content')
 
     fieldsets = (
         (None, {
