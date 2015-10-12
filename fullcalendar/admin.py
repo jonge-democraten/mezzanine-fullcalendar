@@ -13,7 +13,7 @@ class OccurrenceInline(StackedDynamicInlineAdmin):
     fields = ('start_time', 'end_time', 'description', 'location')
 
 class EventAdmin(DisplayableAdmin):
-    list_display = ('title', 'event_category', 'status')
+    list_display = ('title', 'status')
     list_filter = ('event_category',)
     search_fields = ('title', 'description', 'content')
 
