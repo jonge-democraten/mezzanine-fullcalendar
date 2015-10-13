@@ -210,7 +210,7 @@ class BaseDateRangeView(DateRangeMixin, DateMixin2, BaseDateListView):
             '%s__lte' % date_field: date_end
         }
 
-        qs = self.get_dated_queryset(date_field, **date_filter)
+        qs = self.get_dated_queryset(**date_filter)
         date_list = self.get_date_list(qs)
 
         return (date_list, qs, {})
@@ -228,12 +228,12 @@ class CalendarJSONView(JSONResponseMixin, BaseCalendarView):
     def get_queryset(self):
         if current_site_id() == settings.SITE_ID:
             return self.model.objects.published(for_user=self.request.user).select_related(
-                'event').select_related('event.category')
+                'event').select_related('site')
         else:
             return self.model.site_related.published(for_user=self.request.user).select_related(
                 'event'
             ).select_related(
-                'event.category'
+                'site'
             )
 
     def render_to_response(self, context, **kwargs):
