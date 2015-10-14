@@ -100,7 +100,7 @@ def events_site_legend():
 
     sites = {}
     for site in Site.objects.all():
-        sites[site.id] = site.name
+        sites[site.id] = (site.name, site.domain)
 
     context = {
         'legend': {}
@@ -123,7 +123,8 @@ def events_site_legend():
                 data['textColor'] = color[1]
                 data['borderColor'] = color[2]
 
-        site_name = sites[site]
+        site_name, site_domain = sites[site]
+        data['siteDomain'] = site_domain
         context['legend'][site_name] = data
 
     return context
