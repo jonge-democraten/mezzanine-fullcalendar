@@ -341,7 +341,8 @@ class CalendarView(YearMixin, MonthMixin, TemplateView):
         context.update({
             'json_uri': self.request.build_absolute_uri(
                 reverse('fullcalendar-calendar-json')),
-            'default_date': dt.strftime('%Y-%m-%d')
+            'default_date': dt.strftime('%Y-%m-%d'),
+            'is_main_site': current_site_id() == settings.SITE_ID
         })
 
         return context
