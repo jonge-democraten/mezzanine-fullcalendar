@@ -3,9 +3,12 @@ from django.contrib.sites.models import Site
 from django.utils import timezone
 
 from mezzanine import template
+from mezzanine.conf import settings as me_settings
 from mezzanine.utils.sites import current_site_id
 
 from fullcalendar.models import Occurrence
+
+import locale
 
 register = template.Library()
 
@@ -83,13 +86,15 @@ def get_site_and_main_agenda(context, *args, **kwargs):
 def occurrence_duration(occurrence):
     start = timezone.localtime(occurrence.start_time)
     end = timezone.localtime(occurrence.end_time)
-    result = start.strftime('%A, %d %B %Y %H:%M')
+    lang = me_settings.LANGUAGE_CODE.replace('-', '_')
+    locale.setlocale(locale.LC_TIME, lang)
+    result = start.strftime('%A %d %B %Y %H:%M')
 
     if (start.day == end.day and start.month == end.month and
             start.year == end.year):
         result += ' - {:%H:%M}'.format(end)
     else:
-        result += ' - {:%A, %d %B %Y %H:%M}'.format(end)
+        result += ' - {:%A %d %B %Y %H:%M}'.format(end)
 
     return result
 
