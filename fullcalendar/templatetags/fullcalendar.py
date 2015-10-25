@@ -86,7 +86,7 @@ def get_site_and_main_agenda(context, *args, **kwargs):
 def occurrence_duration(occurrence):
     start = timezone.localtime(occurrence.start_time)
     end = timezone.localtime(occurrence.end_time)
-    lang = me_settings.LANGUAGE_CODE.replace('-', '_')
+    lang = me_settings.LANGUAGE_CODE.replace('-', '_') + ".UTF-8"
     locale.setlocale(locale.LC_TIME, lang)
     result = start.strftime('%A %d %B %Y %H:%M')
 
